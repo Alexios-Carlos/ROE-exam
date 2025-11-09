@@ -1,0 +1,50 @@
+# This is the workflow file for your GitHub Actions.
+# It defines the matrix build strategy and artifact upload.
+
+name: Matrix Build and Artifact Upload
+
+# Trigger the workflow on a push to the main branch
+# or when manually triggered (workflow_dispatch)
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    # Use the matrix strategy to define the different variants
+    strategy:
+      fail-fast: false  # Don't cancel other jobs if one fails
+      matrix:
+        # Here is the matrix with 3 variants (3 different OS)
+        # This will create 3 parallel jobs.
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    # Run each job on its corresponding OS from the matrix
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # Step 1: Check out the repository's code
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 2: The required step identifier
+      # This step just prints which variant is running.
+      - name: matrix-7403092
+        run: echo "Running build for OS: ${{ matrix.os }}"
+
+      # Step 3: Generate a unique, non-empty artifact for this job
+      # The 'run' command is shell-agnostic and works on Linux, macOS, and Windows.
+      - name: Generate build artifact
+        run: echo "Build output for ${{ matrix.os }} @ $(date)" > build-output.txt
+
+      # Step 4: Upload the artifact
+      # Uses the 'actions/upload-artifact@v4' action
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Create the unique artifact name using the required prefix
+          # and the matrix variable.
+          name: build-7403092-${{ matrix.os }}
+          # Specify the path to the file to upload
+          path: build-output.txt
